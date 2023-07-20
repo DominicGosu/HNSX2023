@@ -4,55 +4,143 @@
   <div class="medium-6 medium-offset-3 ctrl">
     <form class="searchForm" @submit.prevent="submitSearch">
       <input type="text" class="search" v-model="searchQuery" placeholder="Type here and press enter">
-      <span v-show="searchQuery" class="removeInput" @click="removeSearchQuery">+</span>
     </form>
     <a class="raised-button ink" @click="submitSearch"><i class="fa fa-search"></i> Search</a>
-    <!-- <a class="raised-button ink" href="http://en.wikipedia.org/wiki/Special:Random" target="_blank"><i class="fa fa-random"></i> Random Article</a> -->
   </div>
-  <div class="searchResult" v-show="isResult" transition="expand">
-    <a :href="`http://en.wikipedia.org/?curid=${elem.pageid}`" v-for="elem,index in wikiObj" :key="index">
-      <div class="medium-8 medium-offset-2 columns card">
-        <h1 class="text-headline">{{ elem.title }}</h1>
-        <p class="text-body-1">{{ elem.extract }}</p>
-      </div>
-    </a>
+  <div class="searchResult"  transition="expand">
+    <div v-for="data,index in dataRender" :key="index">
+      <h1 class="text-headline-group" @click="expanded(data)">{{ data.groupKey }}</h1>
+      <template v-if="data.isShow">
+      <component :is="'Group'+data.groupKey" :groupData="data.groupData"></component>
+      </template>
+    </div>
   </div>
 </div>
 </template>
 
 <script>
-import jsonp from 'jsonp';
+import dataSourceFake from './dataSource';
+import GroupDatabase from '@/components/GroupDatabase.vue';
+import GroupPBI from '@/components/GroupPBI.vue';
+import _ from 'lodash';
 export default {
   name: 'App',
+  components:{
+    GroupDatabase,
+    GroupPBI
+  },
   data() {
     return { 
-    wikiObj: null,
     isResult: false,
     searchQuery: '',
+    dataSource :dataSourceFake || [],
+    dataRender : [],
+    test:"",
+    maxSearch: 20,
     };
   },
-  
+  computed:{
+    dataRenderByGroup(data)
+    {
+        let result = [];
+        let group =  _.groupBy(data,'groupType');
+        for(let key in group)
+        {
+          let elem = {
+              groupKey:key,
+              groupData:group[key],
+            };
+            result.push(elem);
+          
+        }
+        return result;
+        
+    }
+  },
   methods: {
-    removeSearchQuery: function() {
-      this.searchQuery = '';
-      this.isResult = false;
+    expanded(data)
+    {
+      if(data)
+      {
+        data.isShow = !data.isShow;
+      }
     },
-    submitSearch: function() {
-      var reqURL = "https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrnamespace=0&exsentences=1&exintro&explaintext&exlimit=max&prop=extracts&gsrlimit=10&gsrsearch="+this.searchQuery+"&format=json";
-      jsonp( reqURL, (error, data) => {
-            if (error) {
-              //console.log(error);
-            } else {
-              this.wikiObj = data.query.pages;
-              this.isResult = true;
+    buildGroupRender(data)
+    {
+      
+          let result = [];
+          let group =  _.groupBy(data,'groupType');
+          for(let key in group)
+          {
+            let elem = {
+                groupKey:key,
+                groupData:group[key],
+                isShow:true,
+              };
+              result.push(elem);
+            
+          }
+          return result;
+    },
+    submitSearch()
+    {
+      this.isResult = true;
+      var data = this.findSimilarArray();
+      if(data)
+      {
+        this.dataRender = this.buildGroupRender(data);
+      }
+    },
+    calculateSimilarityWithArray(array, words) {
+            const wordsLen = words.length;
+            let similarCount = 0;
+            for (let i = 0; i < wordsLen; i++) {
+                if (array.includes(words[i])) {
+                    similarCount++;
+                }
             }
-        });
-    },
+
+            return similarCount / wordsLen;
+        },
+      findSimilarArray() {
+            // Nhiều mảng nhỏ khác nhau
+            const arrays = this.dataSource.map(item=>item.tagSearch);
+
+            // Lấy giá trị nhập vào từ người dùng và tách thành các từ riêng lẻ
+            const inputValue = this.searchQuery.toLowerCase();
+            const inputWords = inputValue.split(' ');
+
+            // Tạo mảng để lưu trữ độ tương đồng của từng mảng con
+            const similarities = [];
+
+            // Duyệt qua từng mảng con và tính độ tương đồng với từng từ riêng lẻ trong dữ liệu nhập vào
+            for (let i = 0; i < arrays.length; i++) {
+                const similarity = this.calculateSimilarityWithArray(arrays[i], inputWords);
+                similarities.push(similarity);
+            }
+
+            // Tìm chỉ số của mảng có độ tương đồng cao nhất
+            let result = [];
+            for(let i = 0 ;i< similarities.length;i++)
+            {
+                if(similarities[i])
+                {
+                  result.push(this.dataSource[i]);
+                }
+            }
+            // Hiển thị kết quả
+            return result;
+        }
   }
 }
 </script>
 
 <style>
+.text-headline-group
+{
+  text-align: left;
+  width: fit-content;
+}
 body,
 html {
   width: 100%;
