@@ -110,7 +110,6 @@ export default {
       var data = this.findSimilarArray();
       if (data) {
         this.dataRender = this.buildGroupRender(data);
-        this.test = this.splitVietnameseStringToPhrases(this.searchQuery);
       }
     },
     calculateSimilarityWithArray(array, words) {
