@@ -12,6 +12,12 @@
           placeholder="Type here and press enter"
         />
       </form>
+      <div class="searchContainer">
+      <!-- Thêm sự kiện click vào biểu tượng giọng nói để bắt đầu/ngừng nghe giọng nói -->
+      <button class="voiceButton" @click="toggleListening">
+        <i class="fa fa-microphone"></i>
+      </button>
+    </div>
       <a class="raised-button ink" @click="submitSearch"
         ><i class="fa fa-search"></i> Search</a
       >
@@ -51,6 +57,8 @@ export default {
       dataRender: [],
       test: "",
       maxSearch: 20,
+      isListening: false,
+      recognition: null,
     };
   },
   computed: {
@@ -68,6 +76,43 @@ export default {
     },
   },
   methods: {
+    //thêm sự kiên speech
+    toggleListening() {
+      if (!this.isListening) {
+        this.startListening();
+      } else {
+        this.stopListening();
+      }
+    },
+    startListening() {
+      // Code để bắt đầu nghe giọng nói và xử lý kết quả
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.lang = "vi-VN"; // Ngôn ngữ tiếng Việt
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const speechToText = event.results[0][0].transcript;
+        this.searchQuery = speechToText; // Gán văn bản nhận được vào ô textbox
+        recognition.stop();
+        this.isListening = false;
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Error occurred in recognition: " + event.error);
+        recognition.stop();
+        this.isListening = false;
+      };
+
+      this.isListening = true;
+    },
+    stopListening() {
+      this.isListening = false;
+      this.recognition.stop();
+    },
+
     removeVietnameseAccents(str) {
     const diacriticsMap = {
       'á': 'a', 'à': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
@@ -496,4 +541,31 @@ textarea.with-floating-label:valid + label.floating-label {
   font-size: 0.75rem;
   top: -56px;
 }
+.input-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.searchForm {
+  flex: 1;
+}
+
+.voiceButton {
+  position: absolute;
+  right: 24%;
+  top: 18%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #888;
+  padding: 8px;
+}
+
+.voiceButton i {
+  vertical-align: middle;
+}
+
 </style>
