@@ -1,48 +1,65 @@
 <template>
   <div class="row column header" id="app">
+    <div class="header-group">
+    <img src="@/assets/Logo_MISA_JSC_Vie.png" width ="200px">
     <h1 class="cover-heading">
       Tìm kiếm ảnh hưởng <i class="fa fa-search"></i>
     </h1>
-    <div class="medium-6 medium-offset-3 ctrl">
-      <form class="searchForm" @submit.prevent="submitSearch">
-        <input
-          type="text"
-          class="search"
-          v-model="searchQuery"
-          placeholder="Type here and press enter"
-        />
-      </form>
-      <a class="raised-button ink" @click="submitSearch"
-        ><i class="fa fa-search"></i> Search</a
-      >
-    </div>
-    <div class="searchResult" transition="expand">
-      <div v-for="(data, index) in dataRender" :key="index">
-        <h1 class="text-headline-group" @click="expanded(data)">
-          {{ data.groupKey }}
-        </h1>
-        <template v-if="data.isShow">
-          <component
-            :is="'Group' + data.groupKey"
-            :groupData="data.groupData"
-          ></component>
-        </template>
+  </div>
+
+    <div class="search-viewer">
+      <div class="searchForm">
+        <form  @submit.prevent="submitSearch">
+          <input
+            type="text"
+            class="search"
+            v-model="searchQuery"
+            placeholder="Nhập từ khóa tìm kiếm"
+          />
+        </form>
+        <div class="flex radio-group">
+            <label class="radio">
+              <input type="radio" id="one" :value="1" v-model="picked" />
+                <span>TFS</span>
+            </label>
+            <label class="radio">
+              <input type="radio" id="two" :value="2" v-model="picked" />
+                <span>Database</span>
+            </label>
+        </div>
       </div>
+      <button class="raised-button ink" @click="submitSearch"
+        ><i class="fa fa-search"></i> Search</button>
     </div>
+    <div v-if="dataRender.length > 0">
+    <h1  class="title-content-result">Kết quả tìm kiếm</h1>
+    <div class="searchResult" transition="expand">
+          <component
+            :is="'GroupDatabase'"
+            :groupData="dataRender"
+          ></component>
+    </div>
+  </div>
   </div>
 </template>
 
 <script>
 import dataSourceFake from "./dataSource";
 import GroupDatabase from "@/components/GroupDatabase.vue";
-import GroupPBI from "@/components/GroupPBI.vue";
+// import GroupPBI from "@/components/GroupPBI.vue";
 import _ from "lodash";
+
 export default {
   name: "App",
   components: {
     GroupDatabase,
-    GroupPBI,
+    // GroupPBI,
   },
+  mounted()
+  {
+    
+  },
+  
   data() {
     return {
       isResult: false,
@@ -51,6 +68,7 @@ export default {
       dataRender: [],
       test: "",
       maxSearch: 20,
+      picked:2,
     };
   },
   computed: {
@@ -92,24 +110,24 @@ export default {
         data.isShow = !data.isShow;
       }
     },
-    buildGroupRender(data) {
-      let result = [];
-      let group = _.groupBy(data, "groupType");
-      for (let key in group) {
-        let elem = {
-          groupKey: key,
-          groupData: group[key],
-          isShow: true,
-        };
-        result.push(elem);
-      }
-      return result;
-    },
+    // buildGroupRender(data) {
+    //   let result = [];
+    //   let group = _.groupBy(data, "groupType");
+    //   for (let key in group) {
+    //     let elem = {
+    //       groupKey: key,
+    //       groupData: group[key],
+    //       isShow: true,
+    //     };
+    //     result.push(elem);
+    //   }
+    //   return result;
+    // },
     submitSearch() {
       this.isResult = true;
       var data = this.findSimilarArray();
       if (data) {
-        this.dataRender = this.buildGroupRender(data);
+        this.dataRender = data;
       }
     },
     calculateSimilarityWithArray(array, words) {
@@ -167,132 +185,31 @@ export default {
 };
 </script>
 
-<style>
-.text-headline-group {
-  text-align: left;
-  width: fit-content;
-}
-body,
-html {
-  width: 100%;
-  height: 100%;
-  background: #f7efe2;
-  font-family: "Source Sans Pro", sans-serif;
-}
-a {
-  color: #333;
+<style lang="scss">
+body
+{
+  background-color: rgb(227,245,247);
 }
 
-.card {
-  text-align: left;
-  border-radius: 0;
-  background: #fff;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.13), 0 1px 5px 0 rgba(0, 0, 0, 0.08);
-  padding: 0 1.6rem;
-  margin-bottom: 0.8rem;
+.header-group{
+  display:flex;
 }
-
-.card:hover {
-  color: #f25c00;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.13), 0 3px 5px 0 rgba(0, 0, 0, 0.08);
-}
-
-.ctrl {
-  margin-bottom: 1.6rem;
-}
-
-h1,
-h2 {
-  font-family: "Source Sans Pro", sans-serif;
-}
-
-.header {
-  color: #555;
-  height: 100%;
+.cover-heading
+{
+  flex:1;
   text-align: center;
-  padding-top: 5px;
 }
-
-.header .cover-heading {
-  font-size: 46px;
-  color: #f25c00;
-  margin-top: 1.6rem;
-  margin-bottom: 1.6rem;
-}
-.removeInput {
-  font-size: 36px;
-  color: #f9a603;
-  cursor: pointer;
-  top: 0;
-  right: 0;
-  position: absolute;
-  -webkit-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
-.searchForm {
-  margin-bottom: 2.6rem;
-  width: 100%;
-  display: flex;
+.search-viewer
+{
+  padding-left:200px;
+  display:flex;
   justify-content: center;
-  position: relative;
+  align-items: center;
 }
-.searchForm .search {
-  width: 50%;
-}
-
-.text-body-1 {
-  font-size: 15px;
-  line-height: 20px;
-  padding-top: 12px;
-  margin-bottom: 1.4rem;
-  letter-spacing: 0;
-}
-
-.text-headline {
-  font-size: 24px;
-  line-height: 32px;
-  padding-top: 16px;
-  margin-bottom: 12px;
-  letter-spacing: 0;
-}
-
-/* vuejs transition */
-.expand-transition {
-  transition: all 0.5s ease;
-  padding: 10px;
-  min-height: 1500px;
-  overflow: hidden;
-}
-
-.expand-enter,
-.expand-leave {
-  height: 0;
-  padding: 0 10px;
-  opacity: 0;
-}
-
-/* Material Design code below */
-.raised-button {
-  display: inline-block;
-  text-align: center;
-  line-height: 1;
-  cursor: pointer;
-  -webkit-appearance: none;
-  transition: all 0.25s ease-out;
-  vertical-align: middle;
-  border: 1px solid transparent;
-  border-radius: 2px;
-  padding: 0.85em 1em;
-  margin: 0 1rem 1rem 0;
-  font-size: 0.9rem;
-  background: #f9a603;
-  color: #fafafa;
-}
-.raised-button:hover,
-.raised-button:focus {
-  background: #e69903;
-  color: #fff;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.13), 0 1px 5px 0 rgba(0, 0, 0, 0.08);
+.searchForm
+{
+  width:50%;
+  margin-right:20px;
 }
 
 input:focus {
@@ -495,5 +412,104 @@ textarea.with-floating-label:valid + label.floating-label {
   color: #00bcd4;
   font-size: 0.75rem;
   top: -56px;
+}
+$radioSize: 22px;
+$radioBorder: #D1D7E3;
+$radioActive: #5D9BFB;
+
+.radio {
+    margin: 16px 0;
+    display: block;
+    cursor: pointer;
+    input {
+        display: none;
+        & + span {
+            line-height: $radioSize;
+            height: $radioSize;
+            padding-left: $radioSize;
+            display: block;
+            position: relative;
+            &:not(:empty) {
+                padding-left: $radioSize + 8;
+            }
+            &:before,
+            &:after {
+                content: '';
+                width: $radioSize;
+                height: $radioSize;
+                display: block;
+                border-radius: 50%;
+                left: 0;
+                top: 0;
+                position: absolute;
+            }
+            &:before {
+                background: $radioBorder;
+                transition: background .2s ease, transform .4s cubic-bezier(.175, .885, .32, 2);
+            }
+            &:after {
+                background: #fff;
+                transform: scale(.78);
+                transition: transform .6s cubic-bezier(.175, .885, .32, 1.4);
+            }
+        }
+        &:checked + span {
+            &:before {
+                transform: scale(1.04);
+                background: $radioActive;
+            }
+            &:after {
+                transform: scale(.4);
+                transition: transform .3s ease;
+            }
+        }
+    }
+    &:hover {
+        input {
+            & + span {
+                &:before {
+                    transform: scale(.92);
+                }
+                &:after {
+                    transform: scale(.74);
+                }
+            }
+            &:checked + span {
+                &:after {
+                    transform: scale(.4);
+                }
+            }
+        }
+    }
+}
+button{
+  width:120px;
+  height:50px;
+  border-radius: 16px;
+  border: 0px;
+  background:#5D9BFB;
+  color:white;
+}
+.flex
+{
+  display:flex;
+}
+.radio-group
+{
+  justify-content: center;
+}
+.radio
+{
+  margin-right:60px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.title-content-result
+{
+  text-align: center;
 }
 </style>
