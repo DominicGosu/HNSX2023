@@ -3,19 +3,26 @@
     <div class="header-group">
     <img src="@/assets/Logo_MISA_JSC_Vie.png" width ="200px">
     <h1 class="cover-heading">
-      Tìm kiếm ảnh hưởng <i class="fa fa-search"></i>
+      Tìm kiếm ảnh hưởng
     </h1>
   </div>
 
     <div class="search-viewer">
       <div class="searchForm">
         <form  @submit.prevent="submitSearch">
+          <div class="search-box">
+          <span class="text-title-search">Từ khóa:</span>
           <input
             type="text"
             class="search"
             v-model="searchQuery"
             placeholder="Nhập từ khóa tìm kiếm"
-          />
+            />
+            <!-- Thêm sự kiện click vào biểu tượng giọng nói để bắt đầu/ngừng nghe giọng nói -->
+          <button class="voiceButton" @click="toggleListening">
+            <i class="fa fa-microphone"></i>
+          </button>
+        </div>
         </form>
         <div class="flex radio-group">
             <label class="radio">
@@ -69,6 +76,8 @@ export default {
       test: "",
       maxSearch: 20,
       picked:2,
+      isListening: false,
+      recognition: null,
     };
   },
   computed: {
@@ -86,6 +95,43 @@ export default {
     },
   },
   methods: {
+    //thêm sự kiên speech
+    toggleListening() {
+      if (!this.isListening) {
+        this.startListening();
+      } else {
+        this.stopListening();
+      }
+    },
+    startListening() {
+      // Code để bắt đầu nghe giọng nói và xử lý kết quả
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.lang = "vi-VN"; // Ngôn ngữ tiếng Việt
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const speechToText = event.results[0][0].transcript;
+        this.searchQuery = speechToText; // Gán văn bản nhận được vào ô textbox
+        recognition.stop();
+        this.isListening = false;
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Error occurred in recognition: " + event.error);
+        recognition.stop();
+        this.isListening = false;
+      };
+
+      this.isListening = true;
+    },
+    stopListening() {
+      this.isListening = false;
+      this.recognition.stop();
+    },
+
     removeVietnameseAccents(str) {
     const diacriticsMap = {
       'á': 'a', 'à': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
@@ -240,7 +286,7 @@ textarea {
   margin: 0 0 1rem;
   font-family: inherit;
   font-size: 1rem;
-  color: #9e9e9e;
+  color: grey;
   background-color: white;
   box-shadow: none;
   border-radius: 0;
@@ -349,7 +395,7 @@ input[type="url"]:focus,
 input[type="color"]:focus,
 textarea:focus {
   border: none;
-  border-bottom: 2px solid #f9a603;
+  border-bottom: 2px solid #5D9BFB;
   box-shadow: none;
   position: relative;
   top: 1px;
@@ -482,7 +528,7 @@ $radioActive: #5D9BFB;
         }
     }
 }
-button{
+.raised-button{
   width:120px;
   height:50px;
   border-radius: 16px;
@@ -498,6 +544,12 @@ button{
 {
   justify-content: center;
 }
+.search-box
+{
+  display:flex;
+  align-items: end;
+  margin-left: 10%;
+}
 .radio
 {
   margin-right:60px;
@@ -511,5 +563,35 @@ button{
 .title-content-result
 {
   text-align: center;
+}
+.input-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.searchForm {
+  flex: 1;
+}
+
+.voiceButton {
+  transform: translateY(-50%);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #888;
+}
+
+.voiceButton i {
+  vertical-align: middle;
+}
+.text-title-search
+{
+  font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap;
+    line-height: 50px;
+    margin-right: 16px
 }
 </style>
