@@ -285,7 +285,7 @@ textarea {
   border: 0;
   margin: 0 0 1rem;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 20px;
   color: grey;
   background-color: white;
   box-shadow: none;
@@ -416,7 +416,7 @@ input[type="time"].with-floating-label + label.floating-label,
 input[type="url"].with-floating-label + label.floating-label,
 input[type="color"].with-floating-label + label.floating-label,
 textarea.with-floating-label + label.floating-label {
-  font-size: 1rem;
+  font-size: 20px;
   color: rgba(0, 0, 0, 0.26);
   position: relative;
   top: -35px;
@@ -456,7 +456,7 @@ input[type="color"].with-floating-label:valid + label.floating-label,
 textarea.with-floating-label:focus + label.floating-label,
 textarea.with-floating-label:valid + label.floating-label {
   color: #00bcd4;
-  font-size: 0.75rem;
+  font-size: 20px;
   top: -56px;
 }
 $radioSize: 22px;
